@@ -100,7 +100,7 @@ export const ActiveNavigationOverlay: React.FC<ActiveNavigationOverlayProps> = (
     <>
       {/* Top Turn-by-Turn Instruction Banner */}
       <div
-        className="fixed top-3 left-3 right-3 md:left-6 md:right-auto md:w-[440px] z-30 rounded-2xl bg-[#102B27] text-white shadow-2xl border border-white/15 p-4"
+        className="absolute top-3 left-3 right-3 md:left-6 md:right-auto md:w-[440px] z-30 rounded-2xl bg-[#102B27] text-white shadow-2xl border border-white/15 p-4"
         role="region"
         aria-live="polite"
         aria-label="Active Turn-by-Turn Instruction"
@@ -130,7 +130,7 @@ export const ActiveNavigationOverlay: React.FC<ActiveNavigationOverlayProps> = (
       </div>
 
       {/* Bottom Active Navigation Control Dock */}
-      <div className="fixed bottom-20 md:bottom-5 left-3 right-3 md:left-6 md:right-auto md:w-[440px] z-30 rounded-2xl bg-white dark:bg-[#102B27] shadow-2xl border border-[#17211F]/15 dark:border-white/15 p-4 space-y-3">
+      <div className="absolute bottom-3 md:bottom-4 left-3 right-3 md:left-6 md:right-auto md:w-[440px] z-30 rounded-2xl bg-white dark:bg-[#102B27] shadow-2xl border border-[#17211F]/15 dark:border-white/15 p-4 space-y-3">
         <div className="flex items-center justify-between gap-3">
           <div>
             <div className="text-xl font-bold font-mono tabular-nums text-[#087F8C] dark:text-[#D3E94D]">

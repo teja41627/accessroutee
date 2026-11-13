@@ -5,7 +5,7 @@ import { ExploreOverlays } from './components/ExploreOverlays.tsx';
 import { JourneyPlannerSheet } from './components/JourneyPlannerSheet.tsx';
 import { ActiveNavigationOverlay } from './components/ActiveNavigationOverlay.tsx';
 import { IndoorNavigationModal } from './components/IndoorNavigationModal.tsx';
-import { AskAssistantModal } from './components/AskAssistantModal.tsx';
+import { HomeChatbotWidget } from './components/HomeChatbotWidget.tsx';
 import { QrScannerModal } from './components/QrScannerModal.tsx';
 import { YouView } from './components/YouView.tsx';
 import { ContributeView } from './components/ContributeView.tsx';
@@ -87,8 +87,19 @@ export default function App() {
   const [simulatedPosition, setSimulatedPosition] = useState<[number, number] | null>(null);
   const [disruptionAlert, setDisruptionAlert] = useState<string | null>(null);
 
-  // Modals & Deep Links
-  const [askOpen, setAskOpen] = useState(false);
+  // Modals, Maps Config & Quota Defense, Deep Links
+  const initialEnvKey =
+    import.meta.env.VITE_GOOGLE_MAPS_API_KEY &&
+    import.meta.env.VITE_GOOGLE_MAPS_API_KEY !== 'MY_GOOGLE_MAPS_API_KEY'
+      ? import.meta.env.VITE_GOOGLE_MAPS_API_KEY
+      : '';
+  const [mapsApiKey, setMapsApiKey] = useState<string>(initialEnvKey);
+  const [configLoaded, setConfigLoaded] = useState<boolean>(Boolean(initialEnvKey));
+  const [gmpQuotaExceeded, setGmpQuotaExceeded] = useState(false);
+
+  const [chatExpanded, setChatExpanded] = useState<boolean>(() =>
+    typeof window !== 'undefined' ? window.innerWidth >= 768 : true
+  );
   const [qrOpen, setQrOpen] = useState(false);
   const [indoorModal, setIndoorModal] = useState<{ venueId: string; nodeId?: string | null } | null>(null);
   const [pickLocationMode, setPickLocationMode] = useState(false);
@@ -99,6 +110,30 @@ export default function App() {
     lat?: number;
     lng?: number;
   } | null>(null);
+
+  useEffect(() => {
+    const onQuotaExceeded = () => setGmpQuotaExceeded(true);
+    window.addEventListener('gmp-quota-exceeded', onQuotaExceeded);
+    return () => window.removeEventListener('gmp-quota-exceeded', onQuotaExceeded);
+  }, []);
+
+  useEffect(() => {
+    if (initialEnvKey) return;
+    let active = true;
+    fetch('/api/config')
+      .then((r) => r.json())
+      .then((cfg: { mapsApiKey?: string }) => {
+        if (!active) return;
+        if (cfg.mapsApiKey) setMapsApiKey(cfg.mapsApiKey);
+      })
+      .catch(() => undefined)
+      .finally(() => {
+        if (active) setConfigLoaded(true);
+      });
+    return () => {
+      active = false;
+    };
+  }, [initialEnvKey]);
 
   const loadBootstrap = useCallback(async (targetUserId = userId) => {
     try {
@@ -329,6 +364,24 @@ export default function App() {
 
   return (
     <div className="h-screen w-screen overflow-hidden flex flex-col bg-[#F7F8F3] dark:bg-[#0D1917] text-[#17211F] dark:text-[#F7F8F3]">
+      {/* Google Maps Platform Case A Quota Notice Banner */}
+      {gmpQuotaExceeded && (
+        <div className="bg-amber-50 border-b border-amber-200 text-amber-900 px-4 py-2.5 text-xs md:text-sm text-center sticky top-0 z-50 shadow-sm">
+          <span>
+            Google Maps Platform quota reached. If you are the app owner, visit{' '}
+            <a
+              href="https://developers.google.com/maps/ai/ai-studio?utm_campaign=gmp_mcp_codeassist_v1_aistudio#quota_exceeded_errors"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline font-semibold text-amber-950 hover:text-amber-800"
+            >
+              maps developer site
+            </a>{' '}
+            for instructions to update your account.
+          </span>
+        </div>
+      )}
+
       {/* Live Disruption Toast Banner */}
       {disruptionAlert && (
         <div
@@ -348,6 +401,8 @@ export default function App() {
         {activeTab === 'explore' && (
           <div className="w-full h-full relative">
             <InteractiveMap
+              mapsApiKey={mapsApiKey}
+              configLoaded={configLoaded}
               places={data.places}
               assets={data.assets}
               incidents={data.incidents}
@@ -432,7 +487,7 @@ export default function App() {
                   if (a) setFlyToTarget({ lat: a.lat, lng: a.lng, zoom: 16.5 });
                 }}
                 onSelectIncident={setSelectedIncident}
-                onOpenAsk={() => setAskOpen(true)}
+                onOpenAsk={() => setChatExpanded((prev) => !prev)}
                 onOpenQr={() => setQrOpen(true)}
                 onOpenYou={() => setActiveTab('you')}
                 onStartDirectionsToNode={(nodeId) => {
@@ -450,6 +505,16 @@ export default function App() {
                 onSimulateLiftOutage={handleSimulateLiftOutage}
               />
             )}
+
+            <HomeChatbotWidget
+              userId={userId}
+              expanded={chatExpanded}
+              hiddenForOverlay={Boolean(activeNav)}
+              hideOnMobileOverlay={Boolean(plannerOpen || selectedPlace || selectedAsset || selectedIncident)}
+              desktopOverlayOnLeft={Boolean(plannerOpen || selectedPlace || selectedAsset || selectedIncident)}
+              onToggleExpanded={setChatExpanded}
+              onExecuteAction={handleAskAction}
+            />
 
             <JourneyPlannerSheet
               open={plannerOpen && !activeNav}
@@ -573,13 +638,6 @@ export default function App() {
       </main>
 
       {/* Modals */}
-      <AskAssistantModal
-        open={askOpen}
-        userId={userId}
-        onClose={() => setAskOpen(false)}
-        onExecuteAction={handleAskAction}
-      />
-
       <QrScannerModal
         open={qrOpen}
         onClose={() => setQrOpen(false)}

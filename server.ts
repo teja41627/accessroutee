@@ -72,6 +72,16 @@ app.get('/api/health', (_req, res) => {
   res.json({ ok: true, service: 'AccessRoute API' });
 });
 
+app.get('/api/config', (_req, res) => {
+  const raw =
+    process.env.VITE_GOOGLE_MAPS_API_KEY ||
+    process.env.GOOGLE_MAPS_API_KEY ||
+    process.env.MAPS_API_KEY ||
+    '';
+  const mapsApiKey = raw && raw !== 'MY_GOOGLE_MAPS_API_KEY' ? raw : '';
+  res.json({ mapsApiKey });
+});
+
 app.get('/api/bootstrap', (req, res) => {
   const userId = (req.query.userId as string) || 'user-aarav';
   const activeProfile = getFullUserProfile(userId) || getFullUserProfile('user-aarav');
@@ -787,6 +797,7 @@ app.post('/api/ask', async (req, res) => {
 
 async function startServer() {
   const PORT = 3000;
+  app.use('/maplibre-worker', express.static(path.resolve(process.cwd(), 'node_modules/maplibre-gl/dist')));
   if (process.env.NODE_ENV !== 'production') {
     const vite = await createViteServer({
       server: { middlewareMode: true },

@@ -186,7 +186,7 @@ export const ExploreOverlays: React.FC<ExploreOverlaysProps> = ({
   return (
     <>
       {/* Top Floating Search Bar + Category Rail */}
-      <div className="fixed top-3 left-3 right-3 md:left-4 md:right-auto md:w-[540px] z-30 space-y-2.5 pointer-events-none">
+      <div className="absolute top-3 left-3 right-3 md:left-4 md:right-auto md:w-[540px] z-30 space-y-2.5 pointer-events-none">
         <div className="pointer-events-auto relative">
           <div className="flex items-center gap-1.5 bg-white dark:bg-[#102B27] rounded-2xl shadow-lg border border-[#17211F]/10 dark:border-white/15 px-3 py-1.5">
             <Search className="w-5 h-5 text-[#087F8C] shrink-0 ml-1" />
@@ -379,7 +379,7 @@ export const ExploreOverlays: React.FC<ExploreOverlaysProps> = ({
       {/* Marker Detail Bottom Sheet / Card */}
       {(selectedPlace || selectedAsset || selectedIncident) && (
         <div
-          className="fixed bottom-16 md:bottom-5 left-0 right-0 md:left-4 md:right-auto md:w-[420px] z-30 bg-white dark:bg-[#102B27] rounded-t-3xl md:rounded-2xl shadow-2xl border border-[#17211F]/10 dark:border-white/15 p-4 md:p-5 space-y-3"
+          className="absolute bottom-0 md:bottom-4 left-0 right-0 md:left-4 md:right-auto md:w-[420px] z-30 bg-white dark:bg-[#102B27] rounded-t-3xl md:rounded-2xl shadow-2xl border border-[#17211F]/10 dark:border-white/15 p-4 md:p-5 space-y-3"
           role="dialog"
           aria-label="Location Accessibility Details"
         >
