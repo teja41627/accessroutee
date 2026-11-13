@@ -1,0 +1,6 @@
+{
+  "name": "AccessRoute",
+  "description": "Map-first accessibility navigation platform for step-free outdoor transit, indoor venue wayfinding, real-time disruption routing, and civic operator incident management.",
+  "requestFramePermissions": ["geolocation", "microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
